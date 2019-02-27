@@ -3,9 +3,10 @@
 
 -----
 ## Setting
+In this part, you need to prepare two computers and some GoPro to build up Autotune System.
 ### Front-end Config
 
-####Software Preparation
+#### Software Preparation
 install opencv and goprocam on Computer1
 
 ```
@@ -15,25 +16,27 @@ conda update --all
 pip install goprocam 
 ```
 
-####Hardware Preparatiom
+#### Hardware Preparatiom
 * Cameras
     We used GoPro Hero 4 in real world experiments. If cameras is putted in place where is closed to observation objects, we recommend you to set cameras with 720P, 120FPS.  If cameras is putted in place where far away from observation objects, we recommend you to set cameras with 1080P, 30FPS.
 * Wifi Sniffer
   You need to use another Computer(Computer2) installed Ubuntu System and T-Shark. Then you can run channel hop scripts in this computer.
 
-##Collecting Data
-###Video
+## Collecting Data
+In this part, we will collect video and wirless data, them assign them to each small session.
+### Video
 Run following commend in Computer1
 ```
 python
 ```
-###Wireless
+### Wireless
 Run following commend in Computer2, then this computer will listen packets from other devices.
 ```
 tshark
 ```
 
 ##Analysis Data
+In this part, we will capture faces from videos, assign small sessions to final sessions and run Autotune Algrithm.
 ###Capturing Face From Video
 
 ###Assign Session
