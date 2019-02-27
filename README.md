@@ -35,13 +35,13 @@ Run following commend in Computer2, then this computer will listen packets from 
 tshark
 ```
 
-##Analysis Data
+## Analysis Data
 In this part, we will capture faces from videos, assign small sessions to final sessions and run Autotune Algrithm.
-###Capturing Face From Video
+### Capturing Face From Video
 
-###Assign Session
+### Assign Session
 
-###Autotune Algrithm
+### Autotune Algrithm
 <!-- ## Raspberry Pi 3 (RP3) Config
 
 https://stackoverflow.com/questions/39371772/how-to-install-anaconda-on-raspberry-pi-3-model-b
