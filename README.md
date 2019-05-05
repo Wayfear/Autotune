@@ -1,85 +1,113 @@
+# AutoTune
 
-# Autotune
+## Introduction
 
------
-## Setting
+This is an implementation of paper [Autonomous Learning for Face Recognition in the Wildvia Ambient Wireless Cues]()
 
-In this part, you need to prepare two computers and some GoPro to build up Autotune System.
-### Front-end Config
+## Install
 
-#### Software Preparation
-install opencv and goprocam on Computer1
+### Environment
 
+* OpenCV
+* tensorflow 1.4
+* Tshark
+* [goprocam](https://pypi.org/project/goprocam/)
+
+## How to run
+
+### Preparation
+
+#### Wifi data caputre
+
+1. Set your router to make sure the router to have fixed channels
+2. Prepare a computer running ubuntu 14.04
+3. Add mac address which you want to listen to `config.yaml` file. Example like that:
+
+   ```yaml
+   mac_name:
+    'device:mac:address': device's name
+    ...
+   ```
+
+4. Run `create_listen_bash.py` to create bash scripts.
+   * Firstly, run `listen.sh` to create interface for listening
+   * Secondly, run `chanhop.sh` to listen the fixed channel set in step 1, the data file will be saved in `{root_folder}/wifi_data/`.
+   * If you want to stop listening process, kill the two bash above, then run `wifi_mod.sh` to reset the network interface card.
+  
+    Tips: Due to the differences of network interface cards, you may need different commends to start the listening process. Although `create_listen_bash.py` script will create two groups of bash script for different devices, it is very likely that none of them can work on your devices. You may need to try the right commend in your decice. The network interface card we use is [TP-Link TL-WN726N](https://www.tp-link.com.cn/product_494.html)
+
+#### Video Data caputre
+
+1. To begin with, you will prapare some `GoPro Hero 4`, setting these device's video quality to 120fps and 720p.
+2. Set these devices to Wi-Fi mode and then connect your computer to the GoPro's Wi-Fi.
+3. Make sure your computer installed [goprocam](https://pypi.org/project/goprocam/) and run `live_stream.py` to capture video.
+
+### Data Preprocess
+
+#### Wi-Fi Data
+
+* Run `analysis_wifi.py` to preprocess the Wi-Fi data. the result will be saved in `{root_folder}/origin_data/`
+
+#### Video Data
+
+1. Run `download_video_from_gopro.py` to download these videos captured by gopro, these videos will be saved in `{root_folder}/video/` and be named by those videos' capture time.
+2. Run `assign_video_by_shot_time.py` to group videos based on capture time, these videos will be moved to `{root_folder}/origin_data/`.
+
+#### Preprocess
+
+1. Run `source/pre_process.py` to convert videos to aligned face images and the result will be saved in `{root_folder}/middle_data/time/`.
+
+2. Run `source/get_meeting_data.py` to assgin data based on session setting.
+
+#### Label Data
+
+During tuning process, Autotune framework will evaluate the framework performance iteratively.
+
+* Runing `source/feature_extraction_classifier.py`
+  
+* After running, the structure of result folder is showing below. You need to correct the classifier error in the `classifier` folder manually.
+  
+    ```bash
+    middle_data/
+    ├── 03-22-11-00-00_03-22-14-00-00
+    │   ├── classifier
+    │   │   ├── 0 # people 0's images
+    │   │   │   ├── 03-22-12-20-00_03-22-12-40-00_4787_1079.jpeg
+    │   │   │   ├── 03-22-12-40-00_03-22-13-00-00_134_2127.jpeg
+    │   │   │   ├── 03-22-12-40-00_03-22-13-00-00_135_2251.jpeg
+    │   │   │   ├── 03-22-12-40-00_03-22-13-00-00_136_2079.jpeg
+    │   │   │   └── 03-22-12-40-00_03-22-13-00-00_137_2389.jpeg
+    │   │   └── 1 # people 1's images
+    │   │       ├── 03-22-12-40-00_03-22-13-00-00_139_2337.jpeg
+    │   │       ├── 03-22-12-40-00_03-22-13-00-00_140_2317.jpeg
+    │   │       ├── 03-22-12-40-00_03-22-13-00-00_141_2300.jpeg
+    │   │       ├── 03-22-13-40-00_03-22-14-00-00_4124_7513.jpeg
+    │   │       └── 03-22-13-40-00_03-22-14-00-00_4125_6286.jpeg
+    │   └── mtcnn # origin data
+    │       ├── 03-22-12-20-00_03-22-12-40-00_4787_1079.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_134_2127.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_135_2251.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_136_2079.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_137_2389.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_139_2337.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_140_2317.jpeg
+    │       ├── 03-22-12-40-00_03-22-13-00-00_141_2300.jpeg
+    │       ├── 03-22-13-40-00_03-22-14-00-00_4124_7513.jpeg
+    │       └── 03-22-13-40-00_03-22-14-00-00_4125_6286.jpeg
+    └── 03-22-14-00-00_03-22-17-00-00
+        ...
+    ```
+
+### AutoTune Hard
+
+```bash
+cd source
+./auto_em_hard.sh
 ```
-conda config --add channels conda-forge
-conda install opencv
-conda update --all
-pip install goprocam 
+
+### AutoTune Soft
+
+```bash
+cd source
+./auto_em.sh
 ```
-
-#### Hardware Preparatiom
-* Cameras
-    We used GoPro Hero 4 in real world experiments. If cameras is putted in place where is closed to observation objects, we recommend you to set cameras with 720P, 120FPS.  If cameras is putted in place where far away from observation objects, we recommend you to set cameras with 1080P, 30FPS.
-* Wifi Sniffer
-  You need to use another Computer(Computer2) installed Ubuntu System and T-Shark. Then you can run channel hop scripts in this computer.
------
-## Collecting Data
-
-In this part, we will collect video and wirless data, them assign them to each small session.
-### Video
-Run following commend in Computer1
-```
-python
-```
-### Wireless
-Run following commend in Computer2, then this computer will listen packets from other devices.
-```
-tshark
-```
------
-## Analysis Data
-
-In this part, we will capture faces from videos, assign small sessions to final sessions and run Autotune Algrithm.
-### Capturing Face From Video
-
-### Assign Session
-
-### Autotune Algrithm
-<!-- ## Raspberry Pi 3 (RP3) Config
-
-https://stackoverflow.com/questions/39371772/how-to-install-anaconda-on-raspberry-pi-3-model-b
-
-```
-sudo chown -R ubuntu /home/ubuntu/anaconda3 
-sudo chmod -R +x /home/ubuntu/anaconda3
-```
-
-Back up the native py27
-```
-mv /usr/bin/python2.7 /usr/bin/python2.7_back
-```
-
-Install opencv on RP3
-```
-cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D INSTALL_PYTHON_EXAMPLES=ON \
-    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-3.1.0/modules \
-    -D BUILD_EXAMPLES=ON \
-    -DENABLE_PRECOMPILED_HEADERS=OFF ..
-
-
-mv cv2.cpython-35m-arm-linux-gnueabihf.so
-
-cd /usr/local/lib/python3.4/site-packages/
-
-sudo mv cv2.cpython-34m.so cv2.so
-
-cd ~/.virtualenvs/cv/lib/python3.4/site-packages/
-
-ln -s /usr/local/lib/python3.4/site-packages/cv2.so cv2.so
-``` -->
-
-
-
-
